@@ -70,11 +70,14 @@ class post:
           t.commit()
        return()
 
+def get_ip_address():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("8.8.8.8", 80))
+    return s.getsockname()[0]
 
 if __name__ == "__main__":
-#    Need to replace the hard-coded IP address with something that gets the IP adress of the current host
     try:
-       web.httpserver.runsimple(app.wsgifunc(), ("192.168.1.18",8080))
+       web.httpserver.runsimple(app.wsgifunc(), (get_ip_address(),8080))
     except Exception, e:
         emsg = '%s' %(e)
         print emsg
