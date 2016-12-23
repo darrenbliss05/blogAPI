@@ -1,4 +1,4 @@
-
+#!/bin/python
 import json
 import sqlite3
 from flask import request, jsonify
@@ -12,9 +12,38 @@ from daemonize import Daemonize
 import logging
 from sqlalchemy import create_engine, MetaData, Table
 
+app_internal_configurations = {"install_path": "/opt/blogsrv", "pidfile_path":"/opt/blogsrv", "logfile_path":"/opt/blogsrv","database_path":"/opt/blogsrv","database_file":"blog.db"} 
+
+def get_config():
+    global app_internal_configurations 
+
+    mydir=os.path.dirname(os.path.realpath(__file__))
+    configfile = "%s/%s" %(mydir,"configfile")
+    try:
+       confile = open(configfile,"r")
+       configs = json.loads(confile.read().strip())
+       confile.close()
+    except IOError:
+       sys.write.stderr("Could not open config file %s" %(configfile)) 
+       sys.exit(1)
+
+    if 'logfile_path' in configs.keys():
+        app_internal_configurations['logfile_path'] = configs['logfile_path']
+    if 'install_path' in configs.keys():
+        app_internal_configurations['install_path'] = configs['install_path']
+    if 'pidfile_path' in configs.keys():
+        app_internal_configurations['pidfile_path'] = configs['pidfile_path']
+    if 'database_path' in configs.keys():
+        app_internal_configurations['database_path'] = configs['database_path']
+    if 'database_file' in configs.keys():
+        app_internal_configurations['database_file'] = configs['database_file']
+    return
+
+get_config()
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////home/bliss/web/proj/blogAPI/blog.db'
+dbfile = 'sqlite:///%s/%s' %(app_internal_configurations['database_path'], app_internal_configurations['database_file'])
+app.config['SQLALCHEMY_DATABASE_URI'] = dbfile 
 db = SQLAlchemy(app)
 
 class blogdb:
@@ -85,6 +114,36 @@ def get_ip_address():
     s.connect(("8.8.8.8", 80))
     return s.getsockname()[0]
 
+from signal import SIGTERM
+def shutdown(pidfile):
+    print "Reading pidfile is %s" % pidfile  
+    try:
+       pidf = open(pidfile,"r")
+       pid = int(pidf.readline().strip())
+       pidf.close()
+    except IOError:
+       pid = None
+    print "PID is %s\n" % pid
+    if not pid:
+      message = "pidfile %s does not exits. Daemon is not running\n"
+      sys.stderr.write(message % pidfile)
+      return
+
+    try:
+      while 1:
+          os.kill(pid,SIGTERM)
+          time.sleep(1)
+    except OSError, err:
+      err = str(err)
+      if (err.find("No such process") > 0):
+           if (os.path.exists(pidfile)):
+                   os.remove(pidfile)
+      else: 
+           print str(err)
+           sys.exit(1)
+
+     
+
 #if __name__ == "__main__":
 def main():
     try:
@@ -96,19 +155,26 @@ def main():
 
 
 if __name__ == '__main__':
+        myname=os.path.basename(sys.argv[0])
+        pidpath = app_internal_configurations['pidfile_path']
+        pidfile='%s/%s.pid' %(pidpath,myname)
+
         if (len(sys.argv) > 1):
            if (sys.argv[1] == "--debug"):
                main()
                sys.exit()
-       
-        myname=os.path.basename(sys.argv[0])
-        pidfile='/tmp/%s.pid' % myname       # any name
+           elif (sys.argv[1] == "stop"):
+               shutdown(pidfile) 
+               sys.exit()
+
         logger = logging.getLogger(__name__)
         logger.setLevel(logging.DEBUG)
         logger.propagate = False
-        fh = logging.FileHandler("/tmp/blogsrcv.log", "w")
+        logfile = "%s/blogsrv.log" %app_internal_configurations['logfile_path']
+        fh = logging.FileHandler(logfile, "w")
         fh.setLevel(logging.DEBUG)
         logger.addHandler(fh)
         keep_fds = [fh.stream.fileno()]
         daemon = Daemonize(app=myname,pid=pidfile, action=main,keep_fds=keep_fds )
         daemon.start()
+
