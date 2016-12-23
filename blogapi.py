@@ -1,8 +1,13 @@
+
 import web
 import json
 import sqlite3
 import sys
 import socket
+import os
+from daemonize import Daemonize
+import logging
+#import daemon
 
 urls = (
     '/posts', 'posts',
@@ -48,7 +53,6 @@ dbinstance.closedb()
 
 class posts:
     def GET(self):
-       allposts = {'post_id':1,'title':'testing','body':'this is a test'}
        web.header('Content-Type', 'application/json')
        t = db.transaction()
        results =  db.query("select * from posts")
@@ -75,11 +79,27 @@ def get_ip_address():
     s.connect(("8.8.8.8", 80))
     return s.getsockname()[0]
 
-if __name__ == "__main__":
+#if __name__ == "__main__":
+def main():
     try:
+       #web.config.debug = False
        web.httpserver.runsimple(app.wsgifunc(), (get_ip_address(),8080))
     except Exception, e:
         emsg = '%s' %(e)
         print emsg
         sys.exit(-1)
 
+
+if __name__ == '__main__':
+       #main()
+        myname=os.path.basename(sys.argv[0])
+        pidfile='/tmp/%s' % myname       # any name
+        logger = logging.getLogger(__name__)
+        logger.setLevel(logging.DEBUG)
+        logger.propagate = False
+        fh = logging.FileHandler("/tmp/test.log", "w")
+        fh.setLevel(logging.DEBUG)
+        logger.addHandler(fh)
+        keep_fds = [fh.stream.fileno()]
+        daemon = Daemonize(app=myname,pid=pidfile, action=main,keep_fds=keep_fds )
+        daemon.start()
