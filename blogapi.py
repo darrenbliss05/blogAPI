@@ -49,38 +49,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = dbfile
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False 
 db = SQLAlchemy(app)
 
-class blogdb:
-    def __init__(self,dbfile):
-        self.dbfile = dbfile
-        self._opendb()
-        self._set_db_id_counter()
-
-    def _set_db_id_counter(self):
-        self.db_id_counter = 1
-        self.dbcursor.execute('select COALESCE(MAX(post_id)+1,0) from posts') 
-        foo =  self.dbcursor.fetchone()[0]
-        self.db_id_counter = int(foo)
-      
-    def get_post_id_counter(self):
-        return(self.db_id_counter)
-
-    def _opendb(self):
-        self.dbconnect = sqlite3.connect(self.dbfile)
-        self.dbconnect.text_factory = str
-        self.dbcursor = self.dbconnect.cursor()
-
-    def closedb(self):
-        self.dbconnect.close()
-        
-
-
-# sqlite db schema from DBA does not include autoincrementing
-# post_id. This is a workaround to get ths next available post_id
-# during startup.
-#
-dbinstance = blogdb('blog.db')
-post_id_counter = dbinstance.get_post_id_counter() - 1
-dbinstance.closedb()  
 
 class posts(db.Model):
     post_id = db.Column(db.Integer, primary_key=True)
@@ -98,6 +66,12 @@ class postschema(ma.Schema):
       fields = ('post_id', 'body', 'title')
 
 posts_schema = postschema(many=True)
+
+# sqlite db schema from DBA does not include autoincrementing
+# post_id. This is a workaround to get ths next available post_id
+# during startup.
+#
+post_id_counter = db.session.query(db.func.max(posts.post_id)).scalar() 
 
 
 @app.route("/post",methods=['POST'])
