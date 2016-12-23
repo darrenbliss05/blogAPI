@@ -42,6 +42,7 @@ get_config()
 app = Flask(__name__)
 dbfile = 'sqlite:///%s/%s' %(app_internal_configurations['install_path'], app_internal_configurations['database_file'])
 app.config['SQLALCHEMY_DATABASE_URI'] = dbfile 
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False 
 db = SQLAlchemy(app)
 
 class blogdb:
