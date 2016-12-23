@@ -11,6 +11,7 @@ import time
 from daemonize import Daemonize
 import logging
 from sqlalchemy import create_engine, MetaData, Table
+from flask_marshmallow import Marshmallow
 
 app_internal_configurations = {"install_path": "/opt/blogsrv", "pidfile_path":"/opt/blogsrv", "logfile_path":"/opt/blogsrv","database_file":"blog.db"} 
 
@@ -40,6 +41,9 @@ def get_config():
 get_config()
 
 app = Flask(__name__)
+ma = Marshmallow(app)
+
+# This really should be reading from a SQLALCHEMY configuration file. 
 dbfile = 'sqlite:///%s/%s' %(app_internal_configurations['install_path'], app_internal_configurations['database_file'])
 app.config['SQLALCHEMY_DATABASE_URI'] = dbfile 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False 
@@ -69,7 +73,6 @@ class blogdb:
         self.dbconnect.close()
         
 
-#db = web.database(dbn="sqlite", db="blog.db")
 
 # sqlite db schema from DBA does not include autoincrementing
 # post_id. This is a workaround to get ths next available post_id
@@ -90,6 +93,13 @@ class posts(db.Model):
         self.post_id = post_id
         print self.title, self.body, self.post_id
 
+class postschema(ma.Schema):
+    class Meta:
+      fields = ('post_id', 'body', 'title')
+
+posts_schema = postschema(many=True)
+
+
 @app.route("/post",methods=['POST'])
 def POST():
     global post_id_counter
@@ -106,7 +116,9 @@ def POST():
 
 @app.route("/posts")
 def GET():
-    return "Requesting all blogs"
+    resultSet = posts.query.all()
+    result = posts_schema.dump(resultSet)
+    return json.dumps(result)
 
 def get_ip_address():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
