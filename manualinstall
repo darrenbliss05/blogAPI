@@ -1,31 +1,31 @@
-This provides the manual steps needed to install this product.
+This document provides the manual steps needed to install this application.
 
-Requirements: The list of requirement for this for this product.
-1. User account: By default this uses the username 'bloguser'. 
+Requirements: The list of requirements for this application.
+1. User account: By default this uses the username 'bloguser'.
 2. Installation location. Tis is the location that this software is install at.
-   default: /opt/blogapi 
+   default: /opt/blogsrv
 3. Python is a must. On linux python is already installed but this application requires other python modules, installed using pip. The list of modules required is
-   json, daemonize, flask, flask_sqlalchemy, sqlalchemy, logging, os, sys, time 
+   json, daemonize, flask, flask_sqlalchemy, sqlalchemy, logging, os, sys, time
 
 
 Instruction step by step
-1. Verify python is install 
+1. Verify python is install
    % /usr/bin/python -v
 
 2. Verify that the required python packages are installed
 
-3. Create application run area as root
+3. Create the application run area as root
     % mkdir /opt/blogssrv
 
 4. Change ownership and permissions of this new area (/opt/blogsrv)
     % chown bloguser /opt/blogsrv
     % chmod 750 /opt/blogsrv
 
-5. As the user bloguser pull the application into the run area (/tmp/blogsrv)
+5. As the user bloguser pull the application into the run area (/opt/blogsrv)
    % git clone <PATH> /opt/blogsrv
-   
-6. The application is now ready to use. To start the applicaiton server type
+
+6. The application is now ready to use. To start the application server type
    % /opt/blogsrv/blogapi.py start
 
-7. The following command can be used to stop the application server
-   % /opt/blogsrv/blogapi.py stsop  
+7. The application can be stopped/shutdown with the following command
+   % /opt/blogsrv/blogapi.py stop
