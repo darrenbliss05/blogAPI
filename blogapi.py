@@ -12,7 +12,7 @@ from daemonize import Daemonize
 import logging
 from sqlalchemy import create_engine, MetaData, Table
 
-app_internal_configurations = {"install_path": "/opt/blogsrv", "pidfile_path":"/opt/blogsrv", "logfile_path":"/opt/blogsrv","database_path":"/opt/blogsrv","database_file":"blog.db"} 
+app_internal_configurations = {"install_path": "/opt/blogsrv", "pidfile_path":"/opt/blogsrv", "logfile_path":"/opt/blogsrv","database_file":"blog.db"} 
 
 def get_config():
     global app_internal_configurations 
@@ -33,8 +33,6 @@ def get_config():
         app_internal_configurations['install_path'] = configs['install_path']
     if 'pidfile_path' in configs.keys():
         app_internal_configurations['pidfile_path'] = configs['pidfile_path']
-    if 'database_path' in configs.keys():
-        app_internal_configurations['database_path'] = configs['database_path']
     if 'database_file' in configs.keys():
         app_internal_configurations['database_file'] = configs['database_file']
     return
@@ -42,7 +40,7 @@ def get_config():
 get_config()
 
 app = Flask(__name__)
-dbfile = 'sqlite:///%s/%s' %(app_internal_configurations['database_path'], app_internal_configurations['database_file'])
+dbfile = 'sqlite:///%s/%s' %(app_internal_configurations['install_path'], app_internal_configurations['database_file'])
 app.config['SQLALCHEMY_DATABASE_URI'] = dbfile 
 db = SQLAlchemy(app)
 
