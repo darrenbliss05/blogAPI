@@ -1,0 +1,5 @@
+# Class: blogapi
+# ===========================
+#
+class blogapi{ 
+}

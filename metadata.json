@@ -1,0 +1,15 @@
+{
+  "name": "blogAPI",
+  "version": "0.1.0",
+  "author": "bliss",
+  "summary": "Simple API to support department bloging",
+  "license": "NA",
+  "source": "git@github.com:darrenbliss05/blogAPI.git",
+  "project_page": "git@github.com:darrenbliss05/blogAPI.git",
+  "issues_url": "NA",
+  "dependencies": [
+    {"name":"puppetlabs-stdlib","version_requirement":">= 1.0.0"}
+  ],
+  "data_provider": null
+}
+

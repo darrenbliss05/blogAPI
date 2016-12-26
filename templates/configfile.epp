@@ -1,0 +1,2 @@
+{"install_path": "<%=$install_path_tag %>", "pidfile_path":"<%=$pidfile_path_tag%>", "logfile_path":"<%=$logfile_path_tag%>", "database_file":"<%=$database_file_tag%>"}
+
