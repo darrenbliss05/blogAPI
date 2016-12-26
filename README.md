@@ -1,12 +1,12 @@
-# blogAPI
+# blogapi
 
 #### Table of Contents
 
 1. [Description](#description)
-1. [Setup - The basics of getting started with blogAPI](#setup)
-    * [What blogAPI affects](#what-blogAPI-affects)
+1. [Setup - The basics of getting started with blogapi](#setup)
+    * [What blogapi affects](#what-blogapi-affects)
     * [Setup requirements](#setup-requirements)
-    * [Beginning with blogAPI](#beginning-with-blogAPI)
+    * [Beginning with blogapi](#beginning-with-blogapi)
 1. [Usage - Configuration options and additional functionality](#usage)
 1. [Reference - An under-the-hood peek at what the module is doing and how](#reference)
 1. [Limitations - OS compatibility, etc.](#limitations)
@@ -14,70 +14,126 @@
 
 ## Description
 
-Start with a one- or two-sentence summary of what the module does and/or what
-problem it solves. This is your 30-second elevator pitch for your module.
-Consider including OS/Puppet version it works with.
+This module installs a blogapi service that runs on linux. This was created in 
+response to a blog post assignment from NWEA.
 
-You can give more descriptive information in a second paragraph. This paragraph
-should answer the questions: "What does this module *do*?" and "Why would I use
-it?" If your module has a range of functionality (installation, configuration,
-management, etc.), this is the time to mention it.
+The api runs on port 8080 and support posting a blog entry and getting all of 
+the blog entries. The goal of the application is to provide an interface for 
+other applications.
+
+The installation can either be done with puppet (this repository is a puppet 
+module) or this can be installed manually. For manual installation refer to the 
+file manualinstall in this repository. The rest of this document will discribe
+how to install using puppet. 
 
 ## Setup
 
-### What blogAPI affects **OPTIONAL**
+### What blogapi affects **OPTIONAL**
 
-If it's obvious what your module touches, you can skip this section. For
-example, folks can probably figure out that your mysql_instance module affects
-their MySQL instances.
-
-If there's more that they should know about, though, this is the place to mention:
-
-* A list of files, packages, services, or operations that the module will alter,
-  impact, or execute.
-* Dependencies that your module automatically installs.
-* Warnings or other important notices.
+Dependencies: This module automatically installs the python packages:
+    daemonize, flask, flask_sqlalchemy, sqlalchemy, flask_marshmallow, 
+    marshmallow-sqlalchemy 
 
 ### Setup Requirements **OPTIONAL**
 
-If your module requires anything extra before setting up (pluginsync enabled,
-etc.), mention it here.
 
-If your most recent release breaks compatibility or requires particular steps
-for upgrading, you might want to include an additional "Upgrading" section
-here.
+1. This module requires the pip installer to install the required python 
+packages.  The installation of pip is outside the scope of this module.
 
-### Beginning with blogAPI
+This module will fail if pip is not installed. You should already have a puppet
+module in place to install and manage pip. If you do not have pip installed 
+you can run the following commands on the system that will run blogapi to 
+install pip. 
 
-The very basic steps needed for a user to get the module up and running. This
-can include setup steps, if necessary, or it can be an example of the most
-basic use of the module.
+     % cd /tmp
+     % wget https://bootstrap.pypa.io/get-pip.py
+     %  python get-pip.py
+
+2. This module requiries a user account to run the daemon. The default is to 
+   run it as root but that is not advised. It is beyond the scope of this
+   module to create user accounts. The next section explains how to 
+   configure the module for a specific user account.
+
+
+### Beginning with blogapi
+
+The very basic steps needed to get the module up and running. 
+1. Download this repository from github into your modules area. If you are using
+   r10k then you can just add this to the Puppetfile.
+2. Application Puppet and hiera confguration settings. Adjust these to meet 
+    your site requirements. 
+
+     blogapi::install_path :: This is the installation and run area for the 
+             application. blogapi will look for the database file and 
+             configure file in this directory. 
+       Default: /opt/blogapi
+
+     blogapi::logfile_path  :: Defines the location for the application logfile.
+       Default: /opt/blogapi
+
+     blogapi::pidfile_path :: This defines the location for the pidfile. The
+             pidfile holds the pid of the active daemon. This is also used by
+             the application to shutdown the daemon. 
+       Default: /opt/blogapi
+
+     blogapi::database_file :: This is the name of the database file. 
+       Default: blog.db
+
+     blogapi::user :: For the module this defines the ownership of the 
+              installation area and all of the files within.
+       Default: root
+
+     blogapi::group :: For the module this defines the group ownership of the
+              installation area and all of the files within. 
+       Default: root
+
+3. Adjust your hiera configuration for the system you will be running blogapi 
+   on.  Once puppet has installed this module you will need to manually 
+   start the daemon. 
 
 ## Usage
 
-This section is where you describe how to customize, configure, and do the
-fancy stuff with your module here. It's especially helpful if you include usage
-examples and code samples for doing things with your module.
+The useage for blogapi is simple. 
+
+To start the daemon (assuming path /opt/blogapi)
+   As the user account run
+
+   % /opt/blogapi/blogapi.py 
+
+   This starts the process up as a daemon. The blogapi.py.pid contains the 
+   pid of the process.
+
+To shutdown the daemon use the following command
+
+   % /opt/blogapi/blogapi.py stop 
+   
+   NOTE: This has a dependancy on the pid file.
+
+To run the process in non-daemon mode use the command below. This is only 
+recommended for debugging.
+
+   % /opt/blogapi/blogapi.py --debug
+
+For testing the tcsh script testbasicapi provides examples on how to use
+curl to test both PUT and GET functionality. If you run the script as is it
+ will perform a GET and then 2 PUTs.
 
 ## Reference
 
-Here, include a complete list of your module's classes, types, providers,
-facts, along with the parameters for each. Users refer to this section (thus
-the name "Reference") to find specific details; most users don't read it per
-se.
 
 ## Limitations
 
-This is where you list OS compatibility, version compatibility, etc. If there
-are Known Issues, you might want to include them under their own heading here.
+This was designed on Centos 7 and only tested for Redhat based systems. This 
+module will only install the application on a Redhat based system. Time did not
+allow for testing on other version of linux so this version is limited to 
+Redhat based systems.   
 
+The manifests/params.pp file is controlling which platforms/OSes this module
+will install onto. To install this on a untested OS update manifests/params.pp
+to include your OS.
+ 
 ## Development
 
-Since your module is awesome, other users will want to play with it. Let them
-know what the ground rules for contributing are.
-
+This is a As is module. There are currently no plans to release any updates to
+this module.
 ## Release Notes/Contributors/Etc. **Optional**
-
-If you aren't using changelog, put your release notes here (though you should
-consider using changelog). You can also add any additional sections you feel
-are necessary or important to include here. Please use the `## ` header.

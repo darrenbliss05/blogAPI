@@ -3,29 +3,64 @@ This document provides the manual steps needed to install this application.
 Requirements: The list of requirements for this application.
 1. User account: By default this uses the username 'bloguser'.
 2. Installation location. Tis is the location that this software is install at.
-   default: /opt/blogsrv
+   default: /opt/blogapi
 3. Python is a must. On linux python is already installed but this application requires other python modules, installed using pip. The list of modules required is
-   json, daemonize, flask, flask_sqlalchemy, sqlalchemy, logging, os, sys, time
+   daemonize, flask, flask_sqlalchemy, sqlalchemy, flask_marshmallow, 
+marshmallow-sqlalchemy
 
 
 Instruction step by step
 1. Verify python is install
+
    % /usr/bin/python -v
 
-2. Verify that the required python packages are installed
+2. The installer "pip" IS REQUIRED. If you don't have pip you will need to 
+    install this tool on you linux system. The following commands can be used
+    to install pip on the system.
 
-3. Create the application run area as root
-    % mkdir /opt/blogssrv
+     % cd /tmp
+     % wget https://bootstrap.pypa.io/get-pip.py
+     %  python get-pip.py
 
-4. Change ownership and permissions of this new area (/opt/blogsrv)
-    % chown bloguser /opt/blogsrv
-    % chmod 750 /opt/blogsrv
+3. Verify that the required python packages are installed. The follwoing pip 
+   command will install any of the packages that are missing.
 
-5. As the user bloguser pull the application into the run area (/opt/blogsrv)
-   % git clone <PATH> /opt/blogsrv
+   % pip install daemonize flask flask_sqlalchemy sqlalchemy flask_marshmallow marshmallow-sqlalchemy
 
-6. The application is now ready to use. To start the application server type
-   % /opt/blogsrv/blogapi.py start
+4. Create the application run area as root
+    % mkdir /opt/blogsapi
 
-7. The application can be stopped/shutdown with the following command
-   % /opt/blogsrv/blogapi.py stop
+    Note: If you install this somehere other than /opt/blogsapi you will need to
+          up the configuration file configfile to reflect these changes.
+
+5. Create a user to run the blog server using what ever process you use to 
+   create new user account. For this document we use bloguser
+5. Change ownership and permissions of this new area (/opt/blogapi)
+    % chown bloguser /opt/blogapi
+    % chmod 750 /opt/blogapi
+
+6. As the user bloguser pull the application into a temporary area.  
+   % git clone <PATH> /tmp/blogapi
+
+7. As the <blogsuer> account copy required filesa. The follwoing command assumes   you cloned into /tmp/blogapi and the run area is /opt/blogapi
+
+   % cp /tmp/blogapi/files/blogapi.py /opt/blogapi
+   % cp /tmp/blogapi/files/blog.db.master /opt/blogapi/blog.db
+   % cp /tmp/blogapi/files/testbasicapi /opt/blogapi
+   % cp /tmp/blogapi/configfile.manualinstall /opt/blogapi/configfile
+
+8. The configuration file in a json file. The things that are supported are
+    install_path :: This is the application path (/opt/blogapi)
+    pidfile_path :: This is the path used for the pidfile. This is used to as
+                    locking and the kill operation requires this file.
+    database_file:: This is the name of the database file (blog.db). If you 
+                    change this then you need to create the database file.
+    logfile_path :: This defines the path to create the application logfile. 
+  
+7. The application is now ready to use. To start the application server type
+   % /opt/blogapi/blogapi.py start
+
+9. The script testbasicapi provides tests that will run a GET to pull all blog entries and then run 2 PUT's to added blogs. This uses simple curl commands to run the tests. You can either just run it or run the curl commands to verify that everything is working.
+
+10. The application can be stopped/shutdown with the following command
+   % /opt/blogapi/blogapi.py stop
