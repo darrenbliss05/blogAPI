@@ -1,5 +1,0 @@
-# Class: blogapi
-# ===========================
-#
-class blogapi{ 
-}

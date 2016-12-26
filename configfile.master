@@ -1,1 +1,0 @@
-{"install_path": "/opt/blogsrv", "pidfile_path":"/opt/blogsrv", "database_path":"/opt/blogsrv" , "logfile_path":"/opt/blogsrv", "database_file":"blog.db"}
