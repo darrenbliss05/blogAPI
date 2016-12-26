@@ -1,0 +1,19 @@
+#!/bin/tcsh
+#POST test
+
+if (  "x$1" != "x" ) then
+   set host = $1
+else 
+   echo -n "Enter server hostname: "
+   set host = $<
+endif
+#GET test
+echo "Performing basic GET  test"
+curl http://${host}:8080/posts
+echo " "
+echo "Performing basic POST  test"
+curl -H "Content-type: application/json"  -X POST http://${host}:8080/post -d '{"title":"Hello Data", "body":"A test is just a test5"}'
+echo " "
+echo "Performing basic POST  test"
+curl -H "Content-type: application/json"  -X POST http://${host}:8080/post -d '{"title":"Hello", "body":"A test is just a test56"}'
+echo " "
