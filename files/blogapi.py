@@ -72,6 +72,8 @@ posts_schema = postschema(many=True)
 # during startup.
 #
 post_id_counter = db.session.query(db.func.max(posts.post_id)).scalar() 
+if (post_id_counter is None):
+    post_id_counter = 1
 
 
 @app.route("/post",methods=['POST'])
